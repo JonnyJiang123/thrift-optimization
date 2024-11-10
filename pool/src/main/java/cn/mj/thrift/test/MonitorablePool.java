@@ -9,10 +9,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public abstract class MonitorablePool {
+public abstract class MonitorablePool implements NamedPool{
     private final Logger logger = LoggerFactory.getLogger(MonitorablePool.class);
     public abstract BaseGenericObjectPool<?> getPool();
-    public abstract String getName();
     private Boolean hasMonitor = false;
     private MatrixInfo preMatrixInfo = null;
     @SafeVarargs
@@ -34,14 +33,18 @@ public abstract class MonitorablePool {
             logger.info(matrixInfo.toString());
             if (consumer != null){
                 for (Consumer<MatrixInfo> matrixInfoConsumer : consumer) {
-                    matrixInfoConsumer.accept(matrixInfo);
+                    try{
+                        matrixInfoConsumer.accept(matrixInfo);
+                    }catch (Exception e){
+                        logger.error("monitor consumer failed: ",e);
+                    }
                 }
             }
         };
         try(ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1)){
             scheduledThreadPoolExecutor.schedule(task,interval.toMillis(), TimeUnit.MILLISECONDS);
         }catch (Exception e){
-            logger.error("monitor failed: ",e);
+            logger.error("monitor schedule failed: ",e);
         }
 
     }
