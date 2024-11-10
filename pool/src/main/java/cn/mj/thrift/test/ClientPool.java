@@ -1,11 +1,11 @@
 package cn.mj.thrift.test;
 
+import org.apache.commons.pool2.impl.BaseGenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import java.time.Duration;
 
-public class ClientPool {
+public class ClientPool extends MonitorablePool implements ModifiablePool<HelloService.Client>{
     private final GenericObjectPool<HelloService.Client> pool;
     public ClientPool(ClientFactory factory) {
         GenericObjectPoolConfig<HelloService.Client> config = new GenericObjectPoolConfig<>();
@@ -18,5 +18,20 @@ public class ClientPool {
     }
     public void returnClient(HelloService.Client client) throws Exception {
         pool.returnObject(client);
+    }
+
+    @Override
+    public BaseGenericObjectPool<?> getPool() {
+        return pool;
+    }
+
+    @Override
+    public String getName() {
+        return "cn.mj.thrift.test.ClientPool";
+    }
+
+    @Override
+    public void resetConfig(GenericObjectPoolConfig<HelloService.Client> config) {
+        this.pool.setConfig(config);
     }
 }

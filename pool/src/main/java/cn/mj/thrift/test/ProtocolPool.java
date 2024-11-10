@@ -1,12 +1,13 @@
 package cn.mj.thrift.test;
 
+import org.apache.commons.pool2.impl.BaseGenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.thrift.protocol.TProtocol;
 
 
 
-public class ProtocolPool {
+public class ProtocolPool extends MonitorablePool implements ModifiablePool<TProtocol>{
     private final GenericObjectPool<TProtocol> pool;
 
     public ProtocolPool(ProtocolFactory factory) {
@@ -24,4 +25,18 @@ public class ProtocolPool {
         pool.returnObject(protocol);
     }
 
+    @Override
+    public BaseGenericObjectPool<?> getPool() {
+        return pool;
+    }
+
+    @Override
+    public String getName() {
+        return "cn.mj.thrift.test.ProtocolPool";
+    }
+
+    @Override
+    public void resetConfig(GenericObjectPoolConfig<TProtocol> config) {
+        this.pool.setConfig(config);
+    }
 }
